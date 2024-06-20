@@ -1,1 +1,1 @@
-export const DB_NAME = "visionvista"
+export const DB_NAME = "visionvista";
