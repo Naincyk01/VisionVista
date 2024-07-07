@@ -88,22 +88,51 @@ return res
 .json(response);
 });
 
+const getVideoById = asyncHandler(async (req, res) => {
+  const { videoId } = req.params;
 
-// const getVideoById = asyncHandler(async (req, res) => {
-//   const { videoId } = req.params
-//   //TODO: get video by id
-// })
+  if (!mongoose.Types.ObjectId.isValid(videoId)) {
+      throw new ApiError(400, "Invalid videoId. Must be a valid ObjectId.");
+    }
+  const video = await Video.findById(videoId);
+
+  if (!video) {
+    throw new ApiError(404, "Video not found.");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, video, "video fetched successfully"));
+});
+
 
 // const updateVideo = asyncHandler(async (req, res) => {
 //   const { videoId } = req.params
-//   //TODO: update video details like title, description, thumbnail
+ 
 
 // })
 
-// const deleteVideo = asyncHandler(async (req, res) => {
-//   const { videoId } = req.params
-//   //TODO: delete video
-// })
+const deleteVideo = asyncHandler(async (req, res) => {
+  const { videoId } = req.params;
+
+  if (!videoId) {
+    throw new ApiError(400, "videoId parameter is required.");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(videoId)) {
+    throw new ApiError(400, "Invalid videoId. Must be a valid ObjectId.");
+  }
+
+  const deletedVideo = await Video.findByIdAndDelete(videoId);
+
+  if (!deletedVideo) {
+    throw new ApiError(404, "Video not found or already deleted.");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Video deleted successfully"));
+});
 
 // const togglePublishStatus = asyncHandler(async (req, res) => {
 //   const { videoId } = req.params
@@ -113,6 +142,8 @@ return res
 export {
   getAllVideos,
   publishAVideo,
+  getVideoById,
+  deleteVideo,
 };
 
 
