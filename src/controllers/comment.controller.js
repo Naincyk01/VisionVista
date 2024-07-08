@@ -3,14 +3,7 @@ import {Comment} from "../models/comment.model.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
-import { Video } from "../models/video.model.js";
-
-
-const getVideoComments = asyncHandler(async (req, res) => {
-    const {videoId} = req.params
-    const {page = 1, limit = 10} = req.query
-
-})
+import { Video } from "../models/video.model.js"
 
 const addComment = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
@@ -36,8 +29,6 @@ const addComment = asyncHandler(async (req, res) => {
     res.json(new ApiResponse(201, "Comment added successfully"));
 });
 
-
-
 const updateComment = asyncHandler(async (req, res) => {
     const { commentId } = req.params;
     const newcomment  = req.body?.content;
@@ -59,7 +50,6 @@ const updateComment = asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200, updatedComment, "Comment updated successfully"));
 });
 
-
 const deleteComment = asyncHandler(async (req, res) => {
     const { commentId } = req.params; 
 
@@ -79,8 +69,55 @@ const deleteComment = asyncHandler(async (req, res) => {
    .json(new ApiResponse(200, "Comment deleted successfully"));
 });
 
+const getVideoComments = asyncHandler(async (req, res) => {
+    const {videoId} = req.params
+    const {page = 1, limit = 10} = req.query
+    const video = await Video.findById(videoId);
+  if (!video) {
+    throw new apiResponse(404, "Video not found");
+  }
+  const comments = await Video.aggregate([
+    {
+      $match: {
+        _id: video._id,
+      },
+    },
+    {
+      $lookup: {
+        from: "comments",
+        localField: "_id",
+        foreignField: "video",
+        as: "comments",
+      },
+    },
+    // {
+    //     $addFields: {
+    //         comments: {
+    //             $size: "$comments",
+    //         }
+    //     }
+    // },
+    {
+      $project: {
+        // title: 1,
+        // thumbnail: 1,
+        // videoFile: 1,
+        // description: 1,
+        // duration: 1,
+        // isPublished: 1,
+        comments: 1,
+      },
+    },
+  ]);
 
+  if (!comments?.length) {
+    throw new apiError(404, "No comments found");
+  }
 
+  return res
+    .status(200)
+    .json(new apiResponse(200, comments[0], "Comments fetched successfully"));
+});
 
 export {
     getVideoComments, 
