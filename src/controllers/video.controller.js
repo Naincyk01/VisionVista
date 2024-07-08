@@ -62,7 +62,6 @@ const publishAVideo = asyncHandler(async (req, res) => {
 });
 
 
-//get all video ka userId not defined dera h puchugi ek baar 
 const getAllVideos = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
 
@@ -107,6 +106,7 @@ const getVideoById = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, video, "video fetched successfully"));
 });
+
 
 const deleteVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
@@ -182,7 +182,7 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     { new: true }
   );
 
-  const message =publishCheck.isPublished
+  const message = publishCheck.isPublished
     ? "Video is successfully published"
     : "Video is successfully unpublished";
 
