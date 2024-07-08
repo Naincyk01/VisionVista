@@ -38,10 +38,26 @@ const addComment = asyncHandler(async (req, res) => {
 
 
 
-
 const updateComment = asyncHandler(async (req, res) => {
+    const { commentId } = req.params;
+    const newcomment  = req.body?.content;
    
-})
+    if (!commentId || !newcomment) {
+        throw new ApiError(400, "Comment ID and content are required.");
+    }
+
+    const updatedComment = await Comment.findByIdAndUpdate(
+        commentId,
+        { content:newcomment},
+        { new: true }
+    );
+
+    if (!updatedComment) {
+        throw new ApiError(404, "Comment not found.");
+    }
+
+    res.status(200).json(new ApiResponse(200, updatedComment, "Comment updated successfully"));
+});
 
 
 const deleteComment = asyncHandler(async (req, res) => {
