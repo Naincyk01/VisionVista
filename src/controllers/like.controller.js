@@ -8,7 +8,6 @@ import { Comment } from "../models/comment.model.js";
 import { Tweet } from "../models/tweet.model.js"
 
 
-
 const toggleVideoLike = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
     const user = req.user;
@@ -70,6 +69,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
     }
 });
 
+
 const toggleTweetLike = asyncHandler(async (req, res) => {
     const {tweetId} = req.params   
     const user = req.user;
@@ -100,12 +100,44 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
     }
 });
 
+
 const getLikedVideos = asyncHandler(async (req, res) => {
+    const user = req.user;
+
+    if (!user) {
+        throw new ApiError(401, "Login to view liked videos");
+    }
+
+   // Find all likes by the user
+    const likedVideos = await Like.find({ likedBy: user._id, video: { $exists: true } }).populate('video');
+
+    // Extract video information from likedVideos array
+    const videos = likedVideos.map(like => like.video);
+
+    // Send response with the list of liked videos
+    return res.json(new ApiResponse(200,videos, "Liked videos fetched successfully"));
 });
 
-export {
+// const getLikedVideos = asyncHandler(async (req, res) => {
+//     const user = req.user;
+  
+//     const likedVideos = await Like.find({ likedBy: user, video: {$exists: true, $ne: null} })
+//     // const likedVideos = await Like.find({ likedBy: user, video: {$exists: true, $ne: null} }).populate('video').exec()
+//     // const likedVideos = await Like.find({ likedBy: user, video: {$exists: true, $ne: null} }).populate('video') // without exec it will work but it is prefered to use exec
+  
+//     if(!likedVideos){
+//       throw new ApiError(500, "Something went wrong while fetching liked videos")
+//     }
+  
+//     return res
+//       .status(200)
+//       .json(new ApiResponse(200, likedVideos, "liked video fetched successfuly"))
+  
+//   })
+
+ export {
     toggleCommentLike,
     toggleTweetLike,
     toggleVideoLike,
     getLikedVideos
-}
+ }
