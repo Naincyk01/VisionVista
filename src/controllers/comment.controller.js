@@ -1,4 +1,3 @@
-import mongoose from "mongoose"
 import {Comment} from "../models/comment.model.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
@@ -10,8 +9,15 @@ const addComment = asyncHandler(async (req, res) => {
     const user = req.user;
     const content = req.body?.content;
 
-    if (!content || !videoId || !user) {
-        throw new ApiError(400, "Content, videoId, and user information are required.");
+
+    if (!content) {
+        throw new ApiError(400, "Content required.");
+    }
+    if (!videoId) {
+        throw new ApiError(400, "videoId required.");
+    }
+    if (!user) {
+        throw new ApiError(400, "user information required.");
     }
 
     const video = await Video.findById(videoId);
@@ -74,7 +80,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
     const {page = 1, limit = 10} = req.query
     const video = await Video.findById(videoId);
   if (!video) {
-    throw new apiResponse(404, "Video not found");
+    throw new ApiResponse(404, "Video not found");
   }
   const comments = await Video.aggregate([
     {
@@ -97,7 +103,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
     //         }
     //     }
     // },
-    {
+     {
       $project: {
         // title: 1,
         // thumbnail: 1,
@@ -111,12 +117,12 @@ const getVideoComments = asyncHandler(async (req, res) => {
   ]);
 
   if (!comments?.length) {
-    throw new apiError(404, "No comments found");
+    throw new ApiError(404, "No comments found");
   }
 
   return res
     .status(200)
-    .json(new apiResponse(200, comments[0], "Comments fetched successfully"));
+    .json(new ApiResponse(200, comments[0], "Comments fetched successfully"));
 });
 
 export {

@@ -132,7 +132,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
 
 
 const updateVideo = asyncHandler(async (req, res) => {
-  const { videoId } = req.params
+  const { videoId } = req.params;
  
   const videoLocalPath = req.file?.path;
 
@@ -162,6 +162,7 @@ const updateVideo = asyncHandler(async (req, res) => {
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
   const { videoId } = req.params
+  console.log("hi")
 
   if (!mongoose.Types.ObjectId.isValid(videoId)) {
     throw new ApiError(400, "Invalid videoId. Must be a valid ObjectId.");
@@ -176,7 +177,7 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     videoId,
     {
       $set: {
-        isPublished: req.body.isPublished || !video.isPublished,
+        isPublished: !video.isPublished,
       },
     },
     { new: true }

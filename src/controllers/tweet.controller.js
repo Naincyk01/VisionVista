@@ -36,44 +36,56 @@ const updateTweet = asyncHandler(async (req, res) => {
     const { tweetId } = req.params;
     const { content } = req.body;
   
-    // Check if user is authenticated
     if (!user) {
       throw new ApiError(401, "Unauthorized: User not logged in.");
     }
-  
-    // Check if tweetId is a valid ObjectId
+
     if (!isValidObjectId(tweetId)) {
       throw new ApiError(400, "Invalid tweet ID");
     }
   
-    // Check if content is provided
     if (!content) {
       throw new ApiError(400, "Tweet content is required.");
     }
   
-    // Find the tweet by tweetId and owner (user)
     const tweetToUpdate = await Tweet.findOneAndUpdate(
       { _id: tweetId, owner: user._id },
       { content },
       { new: true } // Return the updated tweet
     );
   
-    // Check if tweetToUpdate is null (no tweet found or not authorized to update)
     if (!tweetToUpdate) {
       throw new ApiError(404, "Tweet not found or you are not authorized to update it.");
     }
-  
-    // Respond with success message and updated tweet
     res.json(new ApiResponse(200, "Tweet updated successfully", tweetToUpdate));
   });
   
 
-const deleteTweet = asyncHandler(async (req, res) => {
-  //TODO: delete tweet
+const getUserTweets = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  if (!isValidObjectId(userId)) {
+    throw new ApiError(400, "Invalid user ID");
+  }
+
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const tweets = await Tweet.find({ owner: user });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, tweets, "User tweets retrieved successfully"));
 });
 
-const getUserTweets = asyncHandler(async (req, res) => {
-    // TODO: get user tweets
-  });
-
-export { createTweet, getUserTweets, updateTweet, deleteTweet };
+// const deleteTweet = asyncHandler(async (req, res) => {
+//   //TODO: delete tweet
+// });
+export { createTweet,
+   getUserTweets,
+    updateTweet, 
+    // deleteTweet 
+  };
