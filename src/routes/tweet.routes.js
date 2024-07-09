@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import {
     createTweet,
-    // deleteTweet,
+    deleteTweet,
     getUserTweets,
     updateTweet,
 } from "../controllers/tweet.controller.js"
@@ -14,6 +14,6 @@ router.route("/").post(createTweet);
 router.route("/user/:userId")
 .get(getUserTweets);
 router.route("/:tweetId").patch(updateTweet)
-// .delete(deleteTweet);
+.delete(deleteTweet);
 
 export default router

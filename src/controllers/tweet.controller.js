@@ -1,4 +1,4 @@
-import mongoose, { isValidObjectId } from "mongoose";
+import { isValidObjectId } from "mongoose";
 import { Tweet } from "../models/tweet.model.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -60,7 +60,6 @@ const updateTweet = asyncHandler(async (req, res) => {
     res.json(new ApiResponse(200, "Tweet updated successfully", tweetToUpdate));
   });
   
-
 const getUserTweets = asyncHandler(async (req, res) => {
   const { userId } = req.params;
 
@@ -81,11 +80,32 @@ const getUserTweets = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, tweets, "User tweets retrieved successfully"));
 });
 
-// const deleteTweet = asyncHandler(async (req, res) => {
-//   //TODO: delete tweet
-// });
+const deleteTweet = asyncHandler(async (req, res) => {
+  const user = req.user;
+  const { tweetId } = req.params;
+
+  if (!user) {
+    throw new ApiError(401, "Unauthorized: User not logged in.");
+  }
+
+  if (!isValidObjectId(tweetId)) {
+    throw new ApiError(400, "Invalid tweet ID");
+  }
+
+  const tweetToDelete = await Tweet.findOneAndDelete({
+    _id: tweetId,
+    owner: user._id,
+  });
+
+  if (!tweetToDelete) {
+    throw new ApiError(404, "Tweet not found or you are not authorized to delete it.");
+  }
+
+  res.json(new ApiResponse(200, "Tweet deleted successfully"));
+});
+
 export { createTweet,
    getUserTweets,
     updateTweet, 
-    // deleteTweet 
+    deleteTweet 
   };
