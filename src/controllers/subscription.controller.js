@@ -7,19 +7,97 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 
 
 const toggleSubscription = asyncHandler(async (req, res) => {
-    const {channelId} = req.params
-    // TODO: toggle subscription
+  const { subscriberId } = req.params;
+  const user = req.user;
+
+  if (!isValidObjectId(subscriberId)) {
+    throw new ApiError(400, "Invalid subscriberId");
+}
+
+  if(!user){
+    throw new ApiError(404, "Unauthorized..");
+  }
+
+  const channel = await User.findById(subscriberId);
+
+  if(!channel){
+    throw new ApiError(404, "No channel found");
+  }
+
+  const existingSubscribed = await Subscription.findOne({channel, subscriber: user})
+
+  if(existingSubscribed){
+    await Subscription.findByIdAndDelete(existingSubscribed._id);
+    return res
+      .status(200)
+      .json(new ApiResponse(200, "Channel is unsubscribed successfully"));
+  }
+  else{
+    const newsubscribed = await Subscription.create({
+      subscriber: user,
+      channel
+    })
+
+    if(!newsubscribed){
+      throw new ApiError(500, "Something went wrong while subscribing the channel");
+    }
+
+    return res
+      .status(200)
+      .json(new apiResponse(200, "Channel subscribed"))
+  }   
 })
+
+
 
 // controller to return subscriber list of a channel
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
-    const {channelId} = req.params
-})
+  const { channelId } = req.params;
+
+  if (!isValidObjectId(channelId)) {
+      throw new ApiError(400, "Invalid channelId");
+  }
+
+  const channel = await User.findById(channelId);
+
+  if (!channel) {
+      throw new ApiError(404, "Channel not found");
+  }
+
+  // Find all subscriptions where the channel matches
+  const subscribers = await Subscription.find({ channel });
+
+  // Extract only the subscribers from the subscriptions
+  const subscriberList = subscribers.map(subscription => subscription.subscriber);
+
+  return res.status(200).json(new ApiResponse(200, "List of subscribers", subscriberList));
+});
+
+
+
 
 // controller to return channel list to which user has subscribed
 const getSubscribedChannels = asyncHandler(async (req, res) => {
-    const { subscriberId } = req.params
-})
+  const { subscriberId } = req.params;
+
+  if (!isValidObjectId(subscriberId)) {
+      throw new ApiError(400, "Invalid subscriberId");
+  }
+
+  const user = await User.findById(subscriberId);
+
+  if (!user) {
+      throw new ApiError(404, "User not found");
+  }
+
+  const subscriptions = await Subscription.find({ subscriber: user });
+
+  // Extract only the channels from the subscriptions
+  const channelList = subscriptions.map(subscription => subscription.channel);
+
+  return res.status(200).json(new ApiResponse(200, "List of subscribed channels", channelList));
+});
+
 
 export {
     toggleSubscription,
