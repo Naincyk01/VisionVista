@@ -1,24 +1,25 @@
-import mongoose, {isValidObjectId} from "mongoose"
+import {isValidObjectId} from "mongoose"
 import {User} from "../models/user.model.js"
 import { Subscription } from "../models/subscription.model.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
+import mongoose from "mongoose"
 
 
 const toggleSubscription = asyncHandler(async (req, res) => {
-  const { subscriberId } = req.params;
+  const {  channelId } = req.params;
   const user = req.user;
 
-  if (!isValidObjectId(subscriberId)) {
-    throw new ApiError(400, "Invalid subscriberId");
+  if (!isValidObjectId( channelId)) {
+    throw new ApiError(400, "Invalid  channelId");
 }
 
   if(!user){
-    throw new ApiError(404, "Unauthorized..");
+    throw new ApiError(404, "Unauthorized.");
   }
 
-  const channel = await User.findById(subscriberId);
+  const channel = await User.findById( channelId);
 
   if(!channel){
     throw new ApiError(404, "No channel found");
@@ -44,13 +45,13 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 
     return res
       .status(200)
-      .json(new apiResponse(200, "Channel subscribed"))
+      .json(new ApiResponse(200, "Channel subscribed"))
   }   
 })
 
 
 
-// controller to return subscriber list of a channel
+//controller to return subscriber list of a channel
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
   const { channelId } = req.params;
 
@@ -73,6 +74,30 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, "List of subscribers", subscriberList));
 });
 
+// const getUserChannelSubscribers = asyncHandler(async (req, res) => {
+//   const { channelId } = req.params;
+
+//   if(!mongoose.isValidObjectId(channelId)){
+//     throw new ApiError(404, "Invalid channel id")
+//   }
+
+//   const channel = await User.findById(channelId);
+
+//   if(!channel){
+//     throw new ApiError(404, "No channel found");
+//   }
+
+//   const subscribers = await Subscription.find({channel}).populate('subscriber').exec();
+
+//   if(!subscribers){
+//     throw new ApiError(500, "Something went wrong while fetching subscribers list");
+//   }
+
+//   return res
+//     .status(200)
+//     .json(new ApiResponse(200, subscribers, "Subscribers list fetched successfuly"));
+
+// })
 
 
 
@@ -97,6 +122,33 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
 
   return res.status(200).json(new ApiResponse(200, "List of subscribed channels", channelList));
 });
+
+
+// const getSubscribedChannels = asyncHandler(async (req, res) => {
+//   const { subscriberId } = req.params;
+
+//   if(!mongoose.isValidObjectId(subscriberId)){
+//     throw new ApiError(404, "Invalid subscriber id");
+//   }
+
+//   const user = await User.findById(subscriberId);
+
+//   if(!user){
+//     throw new ApiError(404, "No such user found");
+//   }
+
+//   const subscribedChannels = await Subscription.find({ subscriber: user }).populate('subscriber').populate('channel').exec();
+//   // const subscribedChannels = await Subscription.find({ subscriber: user });
+
+//   if(!subscribedChannels){
+//     throw new ApiError(500, "Something went wrong while fetching the subscribed channels list");
+//   }
+
+//   return res
+//     .status(200)
+//     .json(new ApiResponse(200, subscribedChannels, "Subscribed channel list fetched successfuly"));
+
+// })
 
 
 export {
