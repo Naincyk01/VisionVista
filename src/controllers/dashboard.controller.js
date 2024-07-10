@@ -76,8 +76,20 @@ const getChannelStats = asyncHandler(async (req, res) => {
 
 
 const getChannelVideos = asyncHandler(async (req, res) => {
-  
+    const user = req.user;
 
+    if(!user){
+      throw new ApiError(404, "Unauthorized request");
+    }
+  
+    const videos = await Video.find({owner: user});
+    if(!videos){
+      throw new ApiError(500, "Something went wrong while fetching the videos");
+    }
+  
+    return res
+      .status(200)
+      .json(new ApiResponse(200, videos, "Videos fetched successfully"));
 })
 
 export {
